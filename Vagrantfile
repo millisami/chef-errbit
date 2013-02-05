@@ -16,6 +16,9 @@ Vagrant::Config.run do |config|
   config.vm.box = "Opscode-12-04"
   config.vm.network :hostonly, "33.33.33.20"
 
+  cache_dir = local_cache(config.vm.box)
+  config.vm.share_folder "v-cache", "/var/cache/apt/archives/", cache_dir
+
   # Forward a port from the guest to the host, which allows for outside
   # computers to access the VM, whereas host only networking does not.
   # config.vm.forward_port 80, 8080
@@ -44,4 +47,14 @@ Vagrant::Config.run do |config|
       "recipe[errbit::default]"
     ]
   end
+end
+
+def local_cache(box_name)
+  cache_dir = File.join(File.expand_path(Vagrant::Environment::DEFAULT_HOME),
+                        'cache',
+                        'apt',
+                        box_name)
+  partial_dir = File.join(cache_dir, 'partial')
+  FileUtils.mkdir_p(partial_dir) unless File.exists? partial_dir
+  cache_dir
 end
