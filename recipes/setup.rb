@@ -1,14 +1,26 @@
 #
+# Author:: Sachin Sagar Rai <millisami@gmail.com>
 # Cookbook Name:: errbit
-# Recipe:: default
+# Recipe:: setup
 #
 # Copyright (C) 2013 Millisami
 #
-# All rights reserved - Do Not Redistribute
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 
 include_recipe "mongodb::10gen_repo"
 include_recipe "git"
+gem_package "bundler"
 
 group node['errbit']['group']
 user node['errbit']['user'] do
@@ -22,6 +34,28 @@ user node['errbit']['user'] do
   supports :manage_home => true
   system true
 end
+
+# Exporting the SECRET_TOKEN env var
+secret_token = rand(8**256).to_s(36).ljust(8,'a')[0..150]
+# execute "set SECRET_TOKEN var" do
+#   command "echo 'export SECRET_TOKEN=#{secret_token}' >> ~/.bash_profile"
+#   not_if "grep SECRET_TOKEN ~/.bash_profile"
+# end
+file "/etc/profile.d/errbit_env.sh" do
+  mode "0644"
+  action :create_if_missing
+  content "export SECRET_TOKEN=#{secret_token}\nexport RAILS_ENV=production\nexport RACK_ENV=production\n"
+end
+
+# execute "set RAILS_ENV var" do
+#   command "echo 'export RAILS_ENV=production' >> ~/.bash_profile"
+#   not_if "grep RAILS_ENV ~/.bash_profile"
+# end
+
+# execute "set RACK_ENV var" do
+#   command "echo 'export RACK_ENV=production' >> ~/.bash_profile"
+#   not_if "grep RACK_ENV ~/.bash_profile"
+# end
 
 execute "update sources list" do
   command "apt-get update"
@@ -37,6 +71,7 @@ end
 
 directory node['errbit']['deploy_to'] do
   owner node['errbit']['user']
+  group node['errbit']['group']
   mode 00755
   action :create
   recursive true
@@ -44,12 +79,14 @@ end
 
 directory "#{node['errbit']['deploy_to']}/shared" do
   owner node['errbit']['user']
+  group node['errbit']['group']
   mode 00755
 end
 
 %w{ log pids system tmp vendor_bundle scripts config sockets }.each do |dir|
   directory "#{node['errbit']['deploy_to']}/shared/#{dir}" do
     owner node['errbit']['user']
+    group node['errbit']['group']
     mode 0775
     recursive true
   end
@@ -88,7 +125,7 @@ template "#{node['errbit']['deploy_to']}/shared/config/mongoid.yml" do
     environment: node['errbit']['environment'],
     host: node['errbit']['db']['host'],
     port: node['errbit']['db']['port'],
-    database: node['errbit']['db']['database'],
+    database: node['errbit']['db']['database']
     # username: node['errbit']['db']['username'],
     # password: node['errbit']['db']['password']
   })
@@ -98,9 +135,10 @@ deploy_revision node['errbit']['deploy_to'] do
   repo node['errbit']['repo_url']
   revision node['errbit']['revision']
   user node['errbit']['user']
+  group node['errbit']['group']
   enable_submodules false
   migrate false
-    before_migrate do
+  before_migrate do
     link "#{release_path}/vendor/bundle" do
       to "#{node['errbit']['deploy_to']}/shared/vendor_bundle"
     end
@@ -130,8 +168,16 @@ deploy_revision node['errbit']['deploy_to'] do
       environment ({'RAILS_ENV' => node['errbit']['environment']})
     end
   end
-
-  restart_command "touch tmp/restart.txt"
   # git_ssh_wrapper "wrap-ssh4git.sh"
   scm_provider Chef::Provider::Git
 end
+
+template "#{node['nginx']['dir']}/sites-available/#{node['errbit']['name']}" do
+  source "nginx.conf.erb"
+  owner "root"
+  group "root"
+  mode 00644
+  # variables( server_names: ['example.com', 'www.example.com'] )
+end
+
+nginx_site node['errbit']['name']

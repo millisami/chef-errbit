@@ -1,0 +1,69 @@
+
+upstream <%= node['errbit']['name'] %> {
+  server unix:<%= node['errbit']['deploy_to'] %>/shared/sockets/unicorn.sock fail_timeout=0;
+}
+
+# Rewrite www to non-www
+# server{
+#   server_name www.railsapp1.com;
+#   return 301 $scheme://domain.com$request_uri;
+# }
+
+server {
+  listen 80 deferred;
+  <% if @server_names %>
+  server_name <%= @server_names.join(" ") %>;
+  <% else %>
+  server_name <%= node['ipaddress'] %>
+  <% end %>
+  client_max_body_size 4G;
+  keepalive_timeout 5;
+
+  root <%= node['errbit']['deploy_to'] %>/current/public;
+
+  access_log  <%= node['errbit']['deploy_to'] %>/shared/log/access.log combined;
+  error_log   <%= node['errbit']['deploy_to'] %>/shared/log/error.log;
+
+  location ^~ /assets/ {
+    gzip_static on;
+    expires max;
+    add_header Cache-Control public;
+  }
+
+#  location / {
+#    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#    proxy_set_header Host $http_host;
+#    proxy_redirect off;
+#
+#    if (-f $request_filename) {
+#       break;
+#     }
+#
+#     if (!-f $request_filename) {
+#       proxy_pass http://<%= node['errbit']['name'] %>;
+#       break;
+#     }
+#   }
+
+  try_files $uri/index.html $uri @unicorn;
+  location @unicorn {
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Host $http_host;
+    proxy_redirect off;
+    proxy_pass http://<%= node['errbit']['name'] %>;
+  }
+
+  client_max_body_size 4G;
+  keepalive_timeout 10;
+
+  error_page  500 502 503 504 /500.html;
+  error_page  404 /404.html;
+
+  location = /500.html {
+    root  <%= node['errbit']['deploy_to'] %>/current/public;
+  }
+
+  location = /400.html {
+    root  <%= node['errbit']['deploy_to'] %>/current/public;
+  }
+}
