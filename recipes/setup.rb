@@ -180,4 +180,7 @@ template "#{node['nginx']['dir']}/sites-available/#{node['errbit']['name']}" do
   # variables( server_names: ['example.com', 'www.example.com'] )
 end
 
-nginx_site node['errbit']['name']
+nginx_site node['errbit']['name'] do
+  enable true
+end
+

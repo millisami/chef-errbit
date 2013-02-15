@@ -53,9 +53,6 @@ server {
     proxy_pass http://<%= node['errbit']['name'] %>;
   }
 
-  client_max_body_size 4G;
-  keepalive_timeout 10;
-
   error_page  500 502 503 504 /500.html;
   error_page  404 /404.html;
 
