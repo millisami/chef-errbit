@@ -1,6 +1,7 @@
 # Description
 
 This cookbook is designed to be able to run [Errbit](http://github.com/errbit/errbit).
+Its github is at [chef-errbit](https://github.com/millisami/chef-errbit)
 
 # Requirements
 
