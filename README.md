@@ -16,11 +16,19 @@ The following Opscode cookbooks are dependencies:
 
 # Usage
 
+Just to install the Errbit app, include the following in your wrapper cookbook's recipe
+
+    include_recipe "errbit"
+
+Or include it in your run_list
+
+    'recpie[errbit]'
+
 
 License and Author
 ==================
 
-Author:: Sachin Sagar Rai (<millisami@gmail.com>)
+Author:: [Sachin Sagar Rai](http://nepalonrails.com) millisami@gmail.com
 
 Copyright 2013
 

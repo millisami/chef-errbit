@@ -41,7 +41,7 @@ default['errbit']['db']['database']  = "errbit"
 default['errbit']['db']['username']  = ""
 default['errbit']['db']['password']  = ""
 
-# app server
+# app server (Optional: More info in README)
 default['errbit']['server'] = "unicorn" # or use others like puma
 
 
