@@ -6,6 +6,7 @@
   "maintainer_email": "millisami@gmail.com",
   "license": "All rights reserved",
   "platforms": {
+    "ubuntu": ">= 0.0.0"
   },
   "dependencies": {
     "mongodb": ">= 0.0.0",
@@ -30,5 +31,5 @@
   },
   "recipes": {
   },
-  "version": "0.2.0"
+  "version": "0.3.0"
 }
