@@ -26,7 +26,6 @@ group node['errbit']['group']
 user node['errbit']['user'] do
   action :create
   comment "Deployer user"
-  uid 1000
   gid node['errbit']['group']
   shell "/bin/bash"
   home "/home/#{node['errbit']['user']}"
