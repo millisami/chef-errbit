@@ -11,3 +11,5 @@ depends          "git"
 depends          "unicorn"
 depends          "apt"
 depends          "nginx"
+
+supports         "ubuntu"
