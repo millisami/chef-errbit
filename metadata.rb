@@ -11,5 +11,6 @@ depends          "git"
 depends          "unicorn"
 depends          "apt"
 depends          "nginx"
+depends          "build-essential"
 
 supports         "ubuntu"
