@@ -13,7 +13,8 @@
     "git": ">= 0.0.0",
     "unicorn": ">= 0.0.0",
     "apt": ">= 0.0.0",
-    "nginx": ">= 0.0.0"
+    "nginx": ">= 0.0.0",
+    "build-essential": ">= 0.0.0"
   },
   "recommendations": {
   },
@@ -31,5 +32,5 @@
   },
   "recipes": {
   },
-  "version": "0.3.0"
+  "version": "0.4.0"
 }
