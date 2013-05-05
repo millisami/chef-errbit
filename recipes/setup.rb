@@ -19,6 +19,10 @@
 #
 
 include_recipe "mongodb::10gen_repo"
+
+node.set['build_essential']['compiletime'] = true
+include_recipe "build-essential"
+
 include_recipe "git"
 gem_package "bundler"
 
@@ -153,11 +157,12 @@ deploy_revision node['errbit']['deploy_to'] do
     "config/config.yml" => "config/config.yml",
     "config/mongoid.yml" => "config/mongoid.yml"
   )
-  environment "RAILS_ENV" => node['errbit']['environment']
+  environment 'RAILS_ENV' => node['errbit']['environment'], 'SECRET_TOKEN' => node['errbit']['secret_token']
   shallow_clone true
   action :deploy #:deploy or :rollback or :force_deploy
 
   before_restart do
+
     Chef::Log.info "*" * 20 + "COMPILING ASSETS" + "*" * 20
     execute "asset_precompile" do
       cwd release_path
