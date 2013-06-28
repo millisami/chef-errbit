@@ -17,9 +17,9 @@ default['errbit']['revision']     = "master"
 default['errbit']['environment']  = "production"
 
 # errbit config.yml
-default['errbit']['config']['host']                               = "errbit.example.com"
+default['errbit']['config']['host']                               = node['fqdn']
 default['errbit']['config']['enforce_ssl']                        = false
-default['errbit']['config']['email_from']                         = "errbit@example.com"
+default['errbit']['config']['email_from']                         = "errbit@#{node['errbit']['config']['host']}"
 default['errbit']['config']['per_app_email_at_notices']           = false
 default['errbit']['config']['email_at_notices']                   = [1, 10, 100]
 default['errbit']['config']['confirm_resolve_err']                = true

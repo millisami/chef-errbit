@@ -11,11 +11,7 @@ upstream <%= node['errbit']['name'] %> {
 
 server {
   listen 80 deferred;
-  <% if @server_names %>
-  server_name <%= @server_names.join(" ") %>;
-  <% else %>
-  server_name <%= node['ipaddress'] %>
-  <% end %>
+  server_name <%= node['errbit']['config']['host'] %>;
   client_max_body_size 4G;
   keepalive_timeout 5;
 

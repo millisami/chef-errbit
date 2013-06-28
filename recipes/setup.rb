@@ -102,9 +102,9 @@ template "#{node['errbit']['deploy_to']}/shared/config/config.yml" do
   group node['errbit']['group']
   mode 00644
   variables(params: {
-    host: node['errbit']['config']['host'],
+    host: node['errbit']['config']['host'] || node['fqdn'],
     enforce_ssl: node['errbit']['config']['enforce_ssl'],
-    email_from: node['errbit']['config']['email_from'],
+    email_from: node['errbit']['config']['email_from'] || "errbit@#{node['fqdn']}",
     per_app_email_at_notices: node['errbit']['config']['per_app_email_at_notices'],
     email_at_notices: node['errbit']['config']['email_at_notices'],
     confirm_resolve_err: node['errbit']['config']['confirm_resolve_err'],
@@ -181,7 +181,6 @@ template "#{node['nginx']['dir']}/sites-available/#{node['errbit']['name']}" do
   owner "root"
   group "root"
   mode 00644
-  # variables( server_names: ['example.com', 'www.example.com'] )
 end
 
 nginx_site node['errbit']['name'] do
