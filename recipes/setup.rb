@@ -18,8 +18,6 @@
 # limitations under the License.
 #
 
-include_recipe "mongodb::10gen_repo"
-
 node.set['build_essential']['compiletime'] = true
 include_recipe "build-essential"
 

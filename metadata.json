@@ -9,7 +9,6 @@
     "ubuntu": ">= 0.0.0"
   },
   "dependencies": {
-    "mongodb": ">= 0.0.0",
     "git": ">= 0.0.0",
     "unicorn": ">= 0.0.0",
     "apt": ">= 0.0.0",
@@ -17,6 +16,7 @@
     "build-essential": ">= 0.0.0"
   },
   "recommendations": {
+    "mongodb": ">= 0.0.0"
   },
   "suggestions": {
   },

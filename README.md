@@ -1,7 +1,7 @@
 # Description
 
 This cookbook is designed to be able to run [Errbit](http://github.com/errbit/errbit).
-Its github is at [chef-errbit](https://github.com/millisami/chef-errbit)
+Its github is at [chef-errbit](https://github.com/klamontagne/chef-errbit)
 
 # Requirements
 
@@ -9,11 +9,12 @@ Developed using chef 10.14.0 and it should work with higher versions. But not te
 
 The following Opscode cookbooks are dependencies:
 
-* mongodb
 * git
 * unicorn
 * apt
 * nginx
+
+You also need a MongoDB installation, such as with the [mongodb cookbook](https://github.com/edelight/chef-mongodb).
 
 # Usage
 
