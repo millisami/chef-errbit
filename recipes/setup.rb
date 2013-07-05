@@ -38,14 +38,12 @@ end
 
 # Exporting the SECRET_TOKEN env var
 secret_token = rand(8**256).to_s(36).ljust(8,'a')[0..150]
-# execute "set SECRET_TOKEN var" do
-#   command "echo 'export SECRET_TOKEN=#{secret_token}' >> ~/.bash_profile"
-#   not_if "grep SECRET_TOKEN ~/.bash_profile"
-# end
-file "/etc/profile.d/errbit_env.sh" do
-  mode "0644"
-  action :create_if_missing
-  content "export SECRET_TOKEN=#{secret_token}\nexport RAILS_ENV=production\nexport RACK_ENV=production\n"
+execute "set SECRET_TOKEN var" do
+  user node['errbit']['user']
+  command "echo 'export SECRET_TOKEN=#{secret_token}' >> /home/#{node['errbit']['user']}/.bash_profile"
+  not_if "grep SECRET_TOKEN /home/#{node['errbit']['user']}/.bash_profile"
+end
+
 # setup rbenv (after git user setup)
 %w{ ruby_build rbenv::user_install }.each do |requirement|
   include_recipe requirement
