@@ -21,8 +21,8 @@
 Chef::Log.info "-" * 70
 Chef::Log.info "Unicorn Config"
 
-template "#{node['errbit']['deploy_to']}/shared/config/unicorn.conf" do
-  source "unicorn.conf.erb"
+template "#{node['errbit']['deploy_to']}/shared/config/unicorn.rb" do
+  source "unicorn.rb.erb"
   owner node['errbit']['user']
   group node['errbit']['group']
   mode 00644
