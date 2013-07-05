@@ -53,5 +53,11 @@ end
 
 # Restarting the unicorn
 service "unicorn_#{node['errbit']['name']}" do
-  action :restart
+  action :nothing
+  subscribes :restart, "template[#{node['errbit']['deploy_to']}/shared/config/config.yml]"
+  subscribes :restart, "template[/etc/init.d/unicorn_#{node['errbit']['name']}]"
+  subscribes :restart, "template[#{node['errbit']['deploy_to']}/shared/config/unicorn.rb]"
+  subscribes :restart, "template[#{node['errbit']['deploy_to']}/shared/config/config.yml]"
+  subscribes :restart, "template[#{node['errbit']['deploy_to']}/shared/config/mongoid.yml]"
+  subscribes :restart, "deploy_revision[#{node['errbit']['deploy_to']}]"
 end
