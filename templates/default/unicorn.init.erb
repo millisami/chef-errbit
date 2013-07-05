@@ -1,0 +1,126 @@
+#! /bin/bash
+
+### BEGIN INIT INFO
+# Provides:          errbit
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Errbit
+# Description:       Errbit open source error catcher
+### END INIT INFO
+
+
+APP_ROOT="<%= @deploy_to %>"
+APP_USER="<%= @user %>"
+DAEMON_OPTS="-D -c $APP_ROOT/shared/config/unicorn.rb"
+PID_PATH="$APP_ROOT/shared/tmp/pids"
+SOCKET_PATH="$APP_ROOT/shared/tmp/sockets"
+WEB_SERVER_PID="$APP_ROOT/shared/pids/unicorn.pid"
+
+NAME="errbit"
+DESC="Errbit service"
+
+check_pid(){
+  if [ -f $WEB_SERVER_PID ]; then
+    PID=`cat $WEB_SERVER_PID`
+    STATUS=`ps aux | grep $PID | grep -v grep | wc -l`
+  else
+    STATUS=0
+    PID=0
+  fi
+}
+
+execute() {
+  sudo -u $APP_USER -H bash -l -c "cd \"$APP_ROOT/current\" ; $1"
+}
+
+start() {
+  cd $APP_ROOT
+  check_pid
+  if [ "$PID" -ne 0 -a "$STATUS" -ne 0 ]; then
+    # Program is running, exit with error code 1.
+    echo "Error! $DESC $NAME is currently running!"
+    exit 1
+  else
+    if [ `whoami` = root ]; then
+      execute "rm -f $SOCKET_PATH/errbit.socket"
+      execute "RAILS_ENV=<%= @env %> bundle exec unicorn $DAEMON_OPTS"
+      echo "$DESC started"
+    fi
+  fi
+}
+
+stop() {
+  cd $APP_ROOT
+  check_pid
+  if [ "$PID" -ne 0 -a "$STATUS" -ne 0 ]; then
+    ## Program is running, stop it.
+    kill -QUIT `cat $WEB_SERVER_PID`
+    rm "$WEB_SERVER_PID" >> /dev/null
+    echo "$DESC stopped"
+  else
+    ## Program is not running, exit with error.
+    echo "Error! $DESC not started!"
+    exit 1
+  fi
+}
+
+restart() {
+  cd $APP_ROOT
+  check_pid
+  if [ "$PID" -ne 0 -a "$STATUS" -ne 0 ]; then
+    echo "Restarting $DESC..."
+    stop
+    sleep 2
+    start
+    echo "$DESC restarted."
+  else
+    echo "$NAME not running"
+    start
+  fi
+}
+
+status() {
+  cd $APP_ROOT
+  check_pid
+  if [ "$PID" -ne 0 -a "$STATUS" -ne 0 ]; then
+    echo "$DESC / Unicorn with PID $PID is running."
+  else
+    echo "$DESC is not running."
+    exit 1
+  fi
+}
+
+## Check to see if we are running as root first.
+## Found at http://www.cyberciti.biz/tips/shell-root-user-check-script.html
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be run as root"
+    exit 1
+fi
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        restart
+        ;;
+  reload|force-reload)
+        echo -n "Reloading $NAME configuration: "
+        kill -HUP `cat $PID`
+        echo "done."
+        ;;
+  status)
+        status
+        ;;
+  *)
+        echo "Usage: sudo service $NAME {start|stop|restart|reload}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

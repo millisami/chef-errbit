@@ -29,10 +29,15 @@ template "#{node['errbit']['deploy_to']}/shared/config/unicorn.conf" do
 end
 
 template "/etc/init.d/unicorn_#{node['errbit']['name']}" do
-  source "unicorn.service.erb"
+  source "unicorn.init.erb"
   owner "root"
   group "root"
   mode 00755
+  variables(
+    :user => node['errbit']['user'],
+    :deploy_to => node['errbit']['deploy_to'],
+    :env => node['errbit']['environment']
+  )
 end
 
 service "unicorn_#{node['errbit']['name']}" do
