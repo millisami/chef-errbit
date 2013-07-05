@@ -20,15 +20,6 @@
 
 include_recipe 'unicorn'
 
-node.default[:unicorn][:worker_timeout]   = 60
-node.default[:unicorn][:worker_processes] = 2 #[node[:cpu][:total].to_i * 4, 8].min
-node.default[:unicorn][:preload_app]      = false
-node.default[:unicorn][:tcp_nodelay]      = true
-node.default[:unicorn][:backlog]          = 100
-node.default[:unicorn][:tcp_nopush]       = true
-node.default[:unicorn][:tries]            = 3
-# node.default[:unicorn][:delay]            = 100
-
 Chef::Log.info "-" * 70
 Chef::Log.info "Unicorn Config"
 

@@ -1,4 +1,4 @@
-worker_processes <%= node[:unicorn][:worker_processes] %>
+worker_processes <%= node[:errbit][:unicorn][:worker_processes] %>
 
 user "<%= node['errbit']['user'] %>"
 
@@ -7,10 +7,10 @@ working_directory "<%= node['errbit']['deploy_to']%>/current"
 # listen on both a Unix domain socket and a TCP port,
 # use a shorter backlog for quicker failover when busy
 
-listen "<%= node['errbit']['deploy_to']%>/shared/sockets/unicorn.sock", :backlog => <%= node[:unicorn][:backlog] %>
+listen "<%= node['errbit']['deploy_to']%>/shared/sockets/unicorn.sock", :backlog => <%= node[:errbit][:unicorn][:backlog] %>
 listen 8080, :tcp_nopush => true
 
-timeout <%= node[:unicorn][:worker_timeout] %>
+timeout <%= node[:errbit][:unicorn][:worker_timeout] %>
 
 pid "<%= node['errbit']['deploy_to']%>/shared/pids/unicorn.pid"
 
@@ -19,7 +19,7 @@ stdout_path "<%= node['errbit']['deploy_to']%>/shared/log/unicorn.stdout.log"
 
 # combine REE with "preload_app true" for memory savings
 # http://rubyenterpriseedition.com/faq.html#adapt_apps_for_cow
-preload_app <%= node[:unicorn][:preload_app] %>
+preload_app <%= node[:errbit][:unicorn][:preload_app] %>
 GC.copy_on_write_friendly = true if GC.respond_to?(:copy_on_write_friendly=)
 
 # ensure Unicorn doesn't use a stale Gemfile when restarting
