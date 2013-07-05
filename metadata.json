@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "git": ">= 0.0.0",
-    "unicorn": ">= 0.0.0",
+    "ruby_build": ">= 0.0.0",
+    "rbenv": ">= 0.0.0",
     "apt": ">= 0.0.0",
     "nginx": ">= 0.0.0",
     "build-essential": ">= 0.0.0"

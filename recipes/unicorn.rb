@@ -18,8 +18,6 @@
 # limitations under the License.
 #
 
-include_recipe 'unicorn'
-
 Chef::Log.info "-" * 70
 Chef::Log.info "Unicorn Config"
 

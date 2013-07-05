@@ -22,18 +22,18 @@ node.set['build_essential']['compiletime'] = true
 include_recipe "build-essential"
 
 include_recipe "git"
-gem_package "bundler"
+include_recipe "nginx"
 
 group node['errbit']['group']
+
 user node['errbit']['user'] do
   action :create
-  comment "Deployer user"
+  comment "Errbit user"
   gid node['errbit']['group']
   shell "/bin/bash"
   home "/home/#{node['errbit']['user']}"
-  password node['errbit']['password']
   supports :manage_home => true
-  system true
+  system false
 end
 
 # Exporting the SECRET_TOKEN env var
@@ -46,17 +46,28 @@ file "/etc/profile.d/errbit_env.sh" do
   mode "0644"
   action :create_if_missing
   content "export SECRET_TOKEN=#{secret_token}\nexport RAILS_ENV=production\nexport RACK_ENV=production\n"
+# setup rbenv (after git user setup)
+%w{ ruby_build rbenv::user_install }.each do |requirement|
+  include_recipe requirement
 end
 
-# execute "set RAILS_ENV var" do
-#   command "echo 'export RAILS_ENV=production' >> ~/.bash_profile"
-#   not_if "grep RAILS_ENV ~/.bash_profile"
-# end
+# Install appropriate Ruby with rbenv
+rbenv_ruby node['errbit']['install_ruby'] do
+  action :install
+  user node['errbit']['user']
+end
 
-# execute "set RACK_ENV var" do
-#   command "echo 'export RACK_ENV=production' >> ~/.bash_profile"
-#   not_if "grep RACK_ENV ~/.bash_profile"
-# end
+# Set as the rbenv default ruby
+rbenv_global node['errbit']['install_ruby'] do
+  user node['errbit']['user']
+end
+
+# Install required Ruby Gems(via rbenv)
+rbenv_gem "bundler" do
+  action :install
+  user node['errbit']['user']
+  rbenv_version node['errbit']['install_ruby']
+end
 
 execute "update sources list" do
   command "apt-get update"
@@ -73,7 +84,6 @@ end
 directory node['errbit']['deploy_to'] do
   owner node['errbit']['user']
   group node['errbit']['group']
-  mode 00755
   action :create
   recursive true
 end

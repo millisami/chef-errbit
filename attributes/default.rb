@@ -7,14 +7,20 @@
 # All rights reserved - Do Not Redistribute
 #
 
+
+
 default['errbit']['name']         = "errbit"
-default['errbit']['user']         = "deployer"
-default['errbit']['password']     = "$1$qqO27xay$dtmwY9NMmJiSa47xhUZm0." #errbit
+default['errbit']['user']         = "errbit"
 default['errbit']['group']        = node['errbit']['user']
 default['errbit']['deploy_to']    = "/home/#{default['errbit']['user']}/#{node['errbit']['name']}"
 default['errbit']['repo_url']     = "git://github.com/errbit/errbit.git"
 default['errbit']['revision']     = "master"
 default['errbit']['environment']  = "production"
+
+# Local ruby to install via rbenv
+default['errbit']['install_ruby'] = "1.9.3-p429"
+default['rbenv']['user_installs'] = [{ 'user' => default['errbit']['user'] }]
+
 
 # errbit config.yml
 default['errbit']['config']['host']                               = "errbit.example.com"
