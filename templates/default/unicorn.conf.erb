@@ -8,7 +8,6 @@ working_directory "<%= node['errbit']['deploy_to']%>/current"
 # use a shorter backlog for quicker failover when busy
 
 listen "<%= node['errbit']['deploy_to']%>/shared/sockets/unicorn.sock", :backlog => <%= node[:unicorn][:backlog] %>
-listen 8080, :tcp_nopush => true
 
 timeout <%= node[:unicorn][:worker_timeout] %>
 

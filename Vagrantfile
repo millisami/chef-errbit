@@ -3,7 +3,9 @@ Vagrant.configure("2") do |config|
 
   config.vm.hostname = "errbit-berkshelf"
   config.vm.box = "Opscode-12-04"
-  config.vm.network :private_network, ip: "33.33.33.20"
+  config.vm.network :private_network, ip: "33.33.33.10"
+
+  config.vm.box_url = "https://opscode-vm.s3.amazonaws.com/vagrant/opscode_ubuntu-12.04_provisionerless.box"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -16,7 +18,7 @@ Vagrant.configure("2") do |config|
 
   # Forward a port from the guest to the host, which allows for outside
   # computers to access the VM, whereas host only networking does not.
-  # config.vm.forward_port 80, 8080
+  config.vm.network :forwarded_port, guest: 80, host: 8080
 
   # Share an additional folder to the guest VM. The first argument is
   # an identifier, the second is the path on the guest to mount the
@@ -26,8 +28,8 @@ Vagrant.configure("2") do |config|
   # Peepcode chef
   #config.vm.share_folder "v-cookbooks", "/cookbooks", "."
 
-  config.ssh.max_tries = 40
-  config.ssh.timeout   = 120
+  config.omnibus.chef_version = :latest
+  config.vm.boot_timeout = 120
 
   # The path to the Berksfile to use with Vagrant Berkshelf
   # config.berkshelf.berksfile_path = "./Berksfile"

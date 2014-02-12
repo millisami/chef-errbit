@@ -1,3 +1,23 @@
+# Mongoid Configuration
+# =====================
+#
+# Copy this file to config/mongoid.yml and
+# modify it accordingly. This file will automatically
+# be copied to shared/config on the server when
+# `cap deploy:setup` is ran the first time. Be sure
+# to place production specific settings there
+
+# set these environment variables on your server
 <%= @params[:environment] %>:
-  host: localhost
-  database: <%= @params[:database] %>
+  sessions:
+    default:
+      database: <%= @params[:database] %>
+      hosts:
+        - '<%= @params[:host] %>:<%= @params[:port] %>'
+      <% unless @params[:username].empty? || @params[:password].empty? %>
+      username: <%= @params[:username] %>
+      password: <%= @params[:password] %>
+      <% end %>
+  options:
+    identity_map_enabled: <%= @params[:identity_map_enabled] %>
+    use_utc: <%= @params[:use_utc] %>
