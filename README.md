@@ -23,7 +23,7 @@ Just to install the Errbit app, include the following in your wrapper cookbook's
 
 Or include it in your run_list
 
-    'recpie[errbit]'
+    'recipe[errbit]'
 
 
 License and Author
