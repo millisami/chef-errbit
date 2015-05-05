@@ -18,9 +18,7 @@
 # limitations under the License.
 #
 
-node.set['build_essential']['compiletime'] = true
 include_recipe "build-essential"
-
 include_recipe "git"
 include_recipe "nginx"
 
@@ -60,14 +58,10 @@ end
 
 execute "update sources list" do
   command "apt-get update"
-  action :nothing
-end.run_action(:run)
+end
 
 %w(libxml2-dev libxslt1-dev libcurl4-gnutls-dev).each do |pkg|
-  r = package pkg do
-    action :nothing
-  end
-  r.run_action(:install)
+  package pkg
 end
 
 directory node['errbit']['deploy_to'] do
