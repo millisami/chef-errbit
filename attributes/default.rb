@@ -26,7 +26,7 @@ default['errbit']['revision']     = "master"
 default['errbit']['environment']  = "production"
 
 # Local ruby to install via rbenv
-default['errbit']['install_ruby'] = "1.9.3-p429"
+default['errbit']['install_ruby'] = "2.2.2"
 default['rbenv']['user_installs'] = [{ 'user' => default['errbit']['user'] }]
 
 
