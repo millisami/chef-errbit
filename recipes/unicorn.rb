@@ -36,7 +36,7 @@ template "/etc/init.d/unicorn_#{node['errbit']['name']}" do
   variables(
     :user => node['errbit']['user'],
     :deploy_to => node['errbit']['deploy_to'],
-    :env => node['errbit']['environment']
+    :env => node['errbit']['config']['rails_env']
   )
 end
 
@@ -54,10 +54,8 @@ end
 # Restarting the unicorn
 service "unicorn_#{node['errbit']['name']}" do
   action :nothing
-  subscribes :restart, "template[#{node['errbit']['deploy_to']}/shared/config/config.yml]"
   subscribes :restart, "template[/etc/init.d/unicorn_#{node['errbit']['name']}]"
+  subscribes :restart, "template[#{node['errbit']['deploy_to']}/shared/config/env]"
   subscribes :restart, "template[#{node['errbit']['deploy_to']}/shared/config/unicorn.rb]"
-  subscribes :restart, "template[#{node['errbit']['deploy_to']}/shared/config/config.yml]"
-  subscribes :restart, "template[#{node['errbit']['deploy_to']}/shared/config/mongoid.yml]"
   subscribes :restart, "deploy_revision[#{node['errbit']['deploy_to']}]"
 end
