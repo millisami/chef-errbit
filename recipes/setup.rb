@@ -151,6 +151,13 @@ deploy_revision node['errbit']['deploy_to'] do
     link "#{release_path}/vendor/bundle" do
       to "#{node['errbit']['deploy_to']}/shared/vendor_bundle"
     end
+    file "#{release_path}/UserGemfile" do
+      content "gem '#{node['errbit']['javascript_gem']}'"
+      owner node['errbit']['user']
+      group node['errbit']['group']
+      mode 0644
+    end
+
     common_groups = %w{development test cucumber staging production} - [node['errbit']['environment']]
     rbenv_script 'bundle install' do
       code "bundle install --deployment --without '#{common_groups.join ' '}'"

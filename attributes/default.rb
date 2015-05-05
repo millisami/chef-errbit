@@ -26,9 +26,9 @@ default['errbit']['revision']     = "master"
 default['errbit']['environment']  = "production"
 
 # Local ruby to install via rbenv
-default['errbit']['install_ruby'] = "2.2.2"
-default['rbenv']['user_installs'] = [{ 'user' => default['errbit']['user'] }]
-
+default['errbit']['install_ruby']   = "2.2.2"
+default['errbit']['javascript_gem'] = 'therubyracer'
+default['rbenv']['user_installs']   = [{ 'user' => default['errbit']['user'] }]
 
 # errbit config.yml
 default['errbit']['config']['host']                               = "errbit.example.com"
