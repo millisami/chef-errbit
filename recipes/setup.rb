@@ -91,7 +91,7 @@ directory "#{node['errbit']['deploy_to']}/shared" do
   mode 00755
 end
 
-%w{ log pids system tmp vendor_bundle scripts config sockets }.each do |dir|
+%w{ log pids system tmp scripts config sockets }.each do |dir|
   directory "#{node['errbit']['deploy_to']}/shared/#{dir}" do
     owner node['errbit']['user']
     group node['errbit']['group']
@@ -148,9 +148,6 @@ deploy_revision node['errbit']['deploy_to'] do
   migrate false
 
   before_migrate do
-    link "#{release_path}/vendor/bundle" do
-      to "#{node['errbit']['deploy_to']}/shared/vendor_bundle"
-    end
     file "#{release_path}/UserGemfile" do
       content "gem '#{node['errbit']['javascript_gem']}'"
       owner node['errbit']['user']
@@ -160,7 +157,7 @@ deploy_revision node['errbit']['deploy_to'] do
 
     common_groups = %w{development test cucumber staging production} - [node['errbit']['environment']]
     rbenv_script 'bundle install' do
-      code "bundle install --deployment --without '#{common_groups.join ' '}'"
+      code "bundle install --system --without '#{common_groups.join ' '}'"
       cwd release_path
       user node['errbit']['user']
     end
@@ -199,4 +196,3 @@ end
 nginx_site node['errbit']['name'] do
   enable true
 end
-
