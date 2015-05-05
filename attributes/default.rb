@@ -20,14 +20,14 @@
 default['errbit']['name']         = "errbit"
 default['errbit']['user']         = "errbit"
 default['errbit']['group']        = node['errbit']['user']
-default['errbit']['deploy_to']    = "/home/#{default['errbit']['user']}/#{node['errbit']['name']}"
+default['errbit']['deploy_to']    = "/home/#{node['errbit']['user']}/#{node['errbit']['name']}"
 default['errbit']['repo_url']     = "git://github.com/errbit/errbit.git"
 default['errbit']['revision']     = "master"
 
 # Local ruby to install via rbenv
 default['errbit']['install_ruby']   = "2.2.2"
 default['errbit']['javascript_gem'] = 'therubyracer'
-default['rbenv']['user_installs']   = [{ 'user' => default['errbit']['user'] }]
+default['rbenv']['user_installs']   = [{ 'user' => node['errbit']['user'] }]
 
 # dotenv file variables
 #
