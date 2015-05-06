@@ -56,14 +56,6 @@ rbenv_gem "bundler" do
   user node['errbit']['user']
 end
 
-execute "update sources list" do
-  command "apt-get update"
-end
-
-%w(libxml2-dev libxslt1-dev libcurl4-gnutls-dev).each do |pkg|
-  package pkg
-end
-
 directory node['errbit']['deploy_to'] do
   owner node['errbit']['user']
   group node['errbit']['group']
