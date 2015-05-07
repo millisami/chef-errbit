@@ -19,6 +19,4 @@
 #
 
 include_recipe 'errbit::setup'
-server = node['errbit']['server']
-
-include_recipe "errbit::#{server}"
+include_recipe 'errbit::' + node['errbit']['server']['name']

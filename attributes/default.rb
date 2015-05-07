@@ -74,12 +74,12 @@ default['errbit']['config']['rails_env']                         = 'production'
 default['errbit']['config']['secret_key_base']                   = nil
 default['errbit']['config']['serve_static_assets']               = true
 
-# app server (Optional: More info in README)
-default['errbit']['server'] = "unicorn" # or use others like puma
-default[:errbit][:unicorn][:worker_timeout]   = 60
-default[:errbit][:unicorn][:worker_processes] = 2 #[node[:cpu][:total].to_i * 4, 8].min
-default[:errbit][:unicorn][:preload_app]      = false
-default[:errbit][:unicorn][:tcp_nodelay]      = true
-default[:errbit][:unicorn][:backlog]          = 100
-default[:errbit][:unicorn][:tcp_nopush]       = true
-default[:errbit][:unicorn][:tries]            = 3
+# The cookbook currently only supports Puma on systemd and Unicorn on SysVinit.
+default['errbit']['server']['name'] = node['init_package'] == 'systemd' ? 'puma' : 'unicorn'
+
+default['errbit']['server']['backlog']     = 100
+default['errbit']['server']['preload_app'] = false
+default['errbit']['server']['tcp_nodelay'] = true
+default['errbit']['server']['tcp_nopush']  = true
+default['errbit']['server']['timeout']     = 60
+default['errbit']['server']['workers']     = 2

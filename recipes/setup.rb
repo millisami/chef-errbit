@@ -34,6 +34,11 @@ user node['errbit']['user'] do
   system false
 end
 
+# Ensure nginx can read within this directory
+directory '/home/' + node['errbit']['user'] do
+  mode 0701
+end
+
 # setup rbenv (after git user setup)
 %w{ ruby_build rbenv::user_install }.each do |requirement|
   include_recipe requirement
@@ -111,8 +116,8 @@ deploy_revision node['errbit']['deploy_to'] do
   symlinks('log' => 'log', 'pids' => 'tmp/pids', 'sockets' => 'tmp/sockets')
 
   before_migrate do
-    file "#{release_path}/UserGemfile" do
-      content "gem '#{node['errbit']['javascript_gem']}'"
+    template "#{release_path}/UserGemfile" do
+      source "UserGemfile.erb"
       owner node['errbit']['user']
       group node['errbit']['group']
       mode 0644

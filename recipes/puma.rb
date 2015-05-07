@@ -18,9 +18,33 @@
 # limitations under the License.
 #
 
-execute "puma app server" do
-  cwd "#{node['errbit']['deploy_to']}/current"
-  command "bundle exec puma -D"
-  # creates "/tmp/something"
-  action :run
+template "#{node['errbit']['deploy_to']}/shared/config/puma.rb" do
+  source 'puma.rb.erb'
+  owner node['errbit']['user']
+  group node['errbit']['group']
+  mode 0644
+end
+
+['socket', 'service'].each do |unit|
+  template "/lib/systemd/system/puma-#{node['errbit']['name']}.#{unit}" do
+    source "puma.#{unit}.erb"
+    owner 'root'
+    group 'root'
+    mode 0644
+  end
+end
+
+service "puma-#{node['errbit']['name']}" do
+  supports [:reload, :restart, :status]
+  action :nothing
+
+  subscribes :reload, "template[/lib/systemd/system/puma-#{node['errbit']['name']}.service]"
+  subscribes :reload, "template[#{node['errbit']['deploy_to']}/shared/config/puma.rb]"
+  subscribes :reload, "file[#{node['errbit']['deploy_to']}/shared/config/env]"
+  subscribes :reload, "deploy_revision[#{node['errbit']['deploy_to']}]"
+end
+
+service "puma-#{node['errbit']['name']}.socket" do
+  supports [:restart, :status]
+  action [:enable, :start]
 end

@@ -1,0 +1,14 @@
+[Unit]
+Description=<%= node['errbit']['name'] %> Puma daemon
+Requires=puma-errbit.socket
+
+[Service]
+User=<%= node['errbit']['user'] %>
+Group=<%= node['errbit']['group'] %>
+SyslogIdentifier=puma-<%= node['errbit']['name'] %>
+WorkingDirectory=<%= node['errbit']['deploy_to'] %>/current
+ExecStart=/home/<%= node['errbit']['user'] %>/.rbenv/bin/rbenv exec puma --config <%= node['errbit']['deploy_to'] %>/shared/config/puma.rb
+ExecReload=/bin/kill -USR2 $MAINPID
+
+[Install]
+WantedBy=multi-user.target

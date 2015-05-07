@@ -1,0 +1,20 @@
+tag "<%= node['errbit']['name'] %>"
+
+# Is Errbit thread-safe? Probably but we default to MRI so threading
+# is of little benefit. This should be made configurable later.
+workers <%= node['errbit']['server']['workers'] %>
+threads 1, 1
+
+# Ensure we're always in the "current" directory.
+directory "<%= node['errbit']['deploy_to']%>/current"
+
+# Socket might be created by systemd.
+bind "unix://<%= node['errbit']['deploy_to']%>/shared/sockets/puma.sock<%= '?backlog=' + node['errbit']['server']['backlog'] unless node['init_package'] == 'systemd' %>"
+
+state_path "<%= node['errbit']['deploy_to']%>/shared/pids/puma.state"
+stdout_redirect "<%= node['errbit']['deploy_to']%>/shared/log/server.stdout.log", "<%= node['errbit']['deploy_to']%>/shared/log/server.stderr.log", true
+
+environment "<%= node['errbit']['config']['rails_env'] %>"
+<%=- "preload_app!" if node['errbit']['server']['preload_app'] -%>
+prune_bundler
+worker_timeout <%= node['errbit']['server']['timeout'] %>
