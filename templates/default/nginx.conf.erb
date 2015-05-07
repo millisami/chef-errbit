@@ -1,13 +1,6 @@
-
 upstream <%= node['errbit']['name'] %> {
   server unix:<%= node['errbit']['deploy_to'] %>/shared/sockets/unicorn.sock fail_timeout=0;
 }
-
-# Rewrite www to non-www
-# server{
-#   server_name www.railsapp1.com;
-#   return 301 $scheme://domain.com$request_uri;
-# }
 
 server {
   listen <%= node['errbit']['config']['errbit_port'] %> deferred;
@@ -26,22 +19,8 @@ server {
     add_header Cache-Control public;
   }
 
-#  location / {
-#    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-#    proxy_set_header Host $http_host;
-#    proxy_redirect off;
-#
-#    if (-f $request_filename) {
-#       break;
-#     }
-#
-#     if (!-f $request_filename) {
-#       proxy_pass http://<%= node['errbit']['name'] %>;
-#       break;
-#     }
-#   }
-
   try_files $uri/index.html $uri @unicorn;
+
   location @unicorn {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header Host $http_host;
