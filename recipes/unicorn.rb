@@ -42,8 +42,8 @@ end
 
 service "unicorn_#{node['errbit']['name']}" do
   provider Chef::Provider::Service::Init::Debian
-  supports :start => true, :stop => true, :restart => true, :status => true
-  action :nothing
+  supports [:restart, :status]
+  action :enable
 
   subscribes :restart, "template[/etc/init.d/unicorn_#{node['errbit']['name']}]"
   subscribes :restart, "template[#{node['errbit']['deploy_to']}/shared/config/env]"
