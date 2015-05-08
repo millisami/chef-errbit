@@ -10,6 +10,7 @@ provisioner:
   name: chef_zero
 
 platforms:
+  - name: opscode-centos-7.1
   - name: ubuntu-12.04
 
 suites:

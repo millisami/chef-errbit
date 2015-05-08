@@ -15,4 +15,5 @@ depends          "build-essential"
 
 recommends       "mongodb"
 
+supports         "centos"
 supports         "ubuntu"
