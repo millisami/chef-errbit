@@ -22,6 +22,9 @@ include_recipe "build-essential"
 include_recipe "git"
 include_recipe "nginx"
 
+home_dir = "/home/#{node['errbit']['user']}"
+rails_env = node['errbit']['config']['rails_env']
+
 group node['errbit']['group']
 
 user node['errbit']['user'] do
@@ -29,13 +32,13 @@ user node['errbit']['user'] do
   comment "Errbit user"
   gid node['errbit']['group']
   shell "/bin/bash"
-  home "/home/#{node['errbit']['user']}"
+  home home_dir
   supports :manage_home => true
   system false
 end
 
 # Ensure nginx can read within this directory
-directory '/home/' + node['errbit']['user'] do
+directory home_dir do
   mode 0701
 end
 
@@ -105,12 +108,18 @@ end
 deploy_revision node['errbit']['deploy_to'] do
   repo node['errbit']['repo_url']
   revision node['errbit']['revision']
+  shallow_clone true
 
   user node['errbit']['user']
   group node['errbit']['group']
 
-  shallow_clone true
-  migrate false
+  environment(
+    'HOME' => home_dir,
+    'RAILS_ENV' => rails_env
+  )
+
+  migration_command "#{home_dir}/.rbenv/bin/rbenv exec bundle exec rake db:migrate"
+  migrate true
 
   symlink_before_migrate('config/env' => '.env')
   symlinks('log' => 'log', 'pids' => 'tmp/pids', 'sockets' => 'tmp/sockets')
@@ -123,7 +132,7 @@ deploy_revision node['errbit']['deploy_to'] do
       mode 0644
     end
 
-    common_groups = %w{development test production heroku} - [node['errbit']['config']['rails_env']]
+    common_groups = %w{development test production heroku} - [rails_env]
 
     rbenv_script 'bundle install' do
       code "bundle install --system --without '#{common_groups.join ' '}'"
@@ -135,7 +144,7 @@ deploy_revision node['errbit']['deploy_to'] do
   before_restart do
     Chef::Log.info "*" * 20 + "COMPILING ASSETS" + "*" * 20
     rbenv_script 'rake assets:precompile' do
-      code 'bundle exec rake assets:precompile RAILS_ENV=' + node['errbit']['config']['rails_env']
+      code 'bundle exec rake assets:precompile RAILS_ENV=' + rails_env
       cwd release_path
       user node['errbit']['user']
     end
