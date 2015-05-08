@@ -7,14 +7,20 @@
 # All rights reserved - Do Not Redistribute
 #
 
+
+
 default['errbit']['name']         = "errbit"
-default['errbit']['user']         = "deployer"
-default['errbit']['password']     = "$1$qqO27xay$dtmwY9NMmJiSa47xhUZm0." #errbit
+default['errbit']['user']         = "errbit"
 default['errbit']['group']        = node['errbit']['user']
 default['errbit']['deploy_to']    = "/home/#{default['errbit']['user']}/#{node['errbit']['name']}"
 default['errbit']['repo_url']     = "git://github.com/errbit/errbit.git"
 default['errbit']['revision']     = "master"
 default['errbit']['environment']  = "production"
+
+# Local ruby to install via rbenv
+default['errbit']['install_ruby'] = "1.9.3-p429"
+default['rbenv']['user_installs'] = [{ 'user' => default['errbit']['user'] }]
+
 
 # errbit config.yml
 default['errbit']['config']['host']                               = "errbit.example.com"
@@ -43,6 +49,14 @@ default['errbit']['db']['password']  = ""
 
 # app server (Optional: More info in README)
 default['errbit']['server'] = "unicorn" # or use others like puma
+default[:errbit][:unicorn][:worker_timeout]   = 60
+default[:errbit][:unicorn][:worker_processes] = 2 #[node[:cpu][:total].to_i * 4, 8].min
+default[:errbit][:unicorn][:preload_app]      = false
+default[:errbit][:unicorn][:tcp_nodelay]      = true
+default[:errbit][:unicorn][:backlog]          = 100
+default[:errbit][:unicorn][:tcp_nopush]       = true
+default[:errbit][:unicorn][:tries]            = 3
+
 
 default['errbit']['secret_token'] = 'b9e131c733a2672c79af5699f26e0bc5fba23a40ec51d76c9271c00097f35aa4c0993e1150f08048f0b66bd141cbcb58ab28814e35eb281c3cb2374aac160203'
 
