@@ -14,8 +14,8 @@ server {
 
   root <%= node['errbit']['deploy_to'] %>/current/public;
 
-  access_log  <%= node['errbit']['deploy_to'] %>/shared/log/access.log combined;
-  error_log   <%= node['errbit']['deploy_to'] %>/shared/log/error.log;
+  access_log <%= node['nginx']['log_dir'] %>/<%= node['errbit']['name'] %>.access.log combined;
+  error_log  <%= node['nginx']['log_dir'] %>/<%= node['errbit']['name'] %>.error.log;
 
   location ^~ /assets/ {
     gzip_static on;
