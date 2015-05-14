@@ -12,6 +12,7 @@ depends          "rbenv"
 depends          "apt"
 depends          "nginx"
 depends          "build-essential"
+depends          "selinux_policy"
 
 recommends       "mongodb"
 

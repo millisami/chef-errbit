@@ -22,6 +22,9 @@ include_recipe "build-essential"
 include_recipe "git"
 include_recipe "nginx"
 
+extend SELinuxPolicy::Helpers
+include_recipe 'selinux_policy::install' if use_selinux
+
 home_dir = "/home/#{node['errbit']['user']}"
 rails_env = node['errbit']['config']['rails_env']
 
@@ -140,6 +143,10 @@ deploy_revision node['errbit']['deploy_to'] do
       user node['errbit']['user']
     end
 
+    selinux_policy_fcontext "#{release_path}/(app/assets|public)(/.*)?" do
+      secontext 'httpd_sys_content_t'
+    end
+
     Chef::Log.info "*" * 20 + "COMPILING ASSETS" + "*" * 20
 
     rbenv_script 'rake assets:precompile' do
@@ -148,6 +155,28 @@ deploy_revision node['errbit']['deploy_to'] do
       user node['errbit']['user']
     end
   end
+end
+
+selinux_policy_fcontext "#{node['errbit']['deploy_to']}/current" do
+  secontext 'httpd_sys_content_t'
+end
+
+selinux_policy_fcontext "#{node['errbit']['deploy_to']}/shared/sockets/[^/]*\.sock" do
+  secontext 'httpd_var_run_t'
+end
+
+selinux_policy_module 'nginx-errbit-socket' do
+  content <<-EOF
+    module nginx-errbit-socket 0.1;
+
+    require {
+      type httpd_t;
+      type init_t;
+      class unix_stream_socket connectto;
+    }
+
+    allow httpd_t init_t:unix_stream_socket connectto;
+  EOF
 end
 
 template "#{node['nginx']['dir']}/sites-available/#{node['errbit']['name']}" do

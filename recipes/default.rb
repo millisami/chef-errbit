@@ -20,3 +20,9 @@
 
 include_recipe 'errbit::setup'
 include_recipe 'errbit::' + node['errbit']['server']['name']
+
+# Hack to work around systemd creating the socket with the wrong
+# context and selinux_policy cookbook only running restorecon once.
+execute "restorecon -R #{node['errbit']['deploy_to']}" do
+  only_if 'which restorecon'
+end
