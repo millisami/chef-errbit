@@ -139,10 +139,9 @@ deploy_revision node['errbit']['deploy_to'] do
       cwd release_path
       user node['errbit']['user']
     end
-  end
 
-  before_restart do
     Chef::Log.info "*" * 20 + "COMPILING ASSETS" + "*" * 20
+
     rbenv_script 'rake assets:precompile' do
       code 'bundle exec rake assets:precompile RAILS_ENV=' + rails_env
       cwd release_path
