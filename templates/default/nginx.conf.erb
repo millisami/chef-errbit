@@ -3,7 +3,7 @@ upstream <%= node['errbit']['name'] %> {
 }
 
 server {
-  listen <%= node['errbit']['config']['errbit_port'] %> deferred;
+  listen <%= node['errbit']['server']['port'] %> deferred;
   server_name <%= node['errbit']['config']['errbit_host'] %>;
 
   client_max_body_size 4G;

@@ -78,6 +78,7 @@ default['errbit']['config']['serve_static_assets']               = true
 default['errbit']['server']['name'] = node['init_package'] == 'systemd' ? 'puma' : 'unicorn'
 
 default['errbit']['server']['backlog']     = 100
+default['errbit']['server']['port']        = node['errbit']['config']['errbit_port']
 default['errbit']['server']['preload_app'] = false
 default['errbit']['server']['tcp_nodelay'] = true
 default['errbit']['server']['tcp_nopush']  = true
