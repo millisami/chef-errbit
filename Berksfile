@@ -1,4 +1,4 @@
 source 'https://api.berkshelf.com'
 metadata
 
-cookbook 'rbenv', :github => 'he9lin/chef-rbenv'
+cookbook 'rbenv', :github => 'chef-rbenv/chef-rbenv'
