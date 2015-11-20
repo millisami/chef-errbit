@@ -8,7 +8,7 @@ version          "0.4.0"
 
 depends          "git"
 depends          "ruby_build"
-depends          "rbenv"
+depends          "ruby_rbenv"
 depends          "apt"
 depends          "nginx"
 depends          "build-essential"
