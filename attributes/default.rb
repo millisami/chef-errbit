@@ -25,7 +25,7 @@ default['errbit']['repo_url']     = "git://github.com/errbit/errbit.git"
 default['errbit']['revision']     = "master"
 
 # Local ruby to install via rbenv
-default['errbit']['install_ruby']   = "2.2.2"
+default['errbit']['install_ruby']   = '2.2.4'
 default['errbit']['javascript_gem'] = 'therubyracer'
 default['rbenv']['user_installs']   = [{ 'user' => node['errbit']['user'] }]
 
