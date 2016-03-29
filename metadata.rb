@@ -10,7 +10,7 @@ depends          "git"
 depends          "ruby_build"
 depends          "ruby_rbenv"
 depends          "apt"
-depends          "nginx"
+depends          "nginx", '~> 2.7'
 depends          "build-essential"
 depends          "selinux_policy"
 
