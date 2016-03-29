@@ -46,7 +46,7 @@ directory home_dir do
 end
 
 # setup rbenv (after git user setup)
-%w{ ruby_build rbenv::user_install }.each do |requirement|
+%w{ ruby_build ruby_rbenv::user_install }.each do |requirement|
   include_recipe requirement
 end
 
