@@ -45,9 +45,11 @@ directory home_dir do
   mode 0701
 end
 
-# setup rbenv (after git user setup)
-%w{ ruby_build ruby_rbenv::user_install }.each do |requirement|
-  include_recipe requirement
+rbenv_user_install node['errbit']['user']
+
+rbenv_plugin 'ruby-build' do
+  git_url 'https://github.com/rbenv/ruby-build.git'
+  user node['errbit']['user']
 end
 
 # Install appropriate Ruby with rbenv
@@ -65,6 +67,7 @@ end
 rbenv_gem "bundler" do
   action :install
   user node['errbit']['user']
+  rbenv_version node['errbit']['install_ruby']
 end
 
 directory node['errbit']['deploy_to'] do
@@ -141,6 +144,7 @@ deploy_revision node['errbit']['deploy_to'] do
       code "bundle install --system --without '#{common_groups.join ' '}'"
       cwd release_path
       user node['errbit']['user']
+      rbenv_version node['errbit']['install_ruby']
     end
 
     selinux_policy_fcontext "#{release_path}/(app/assets|public)(/.*)?" do
@@ -153,6 +157,7 @@ deploy_revision node['errbit']['deploy_to'] do
       code 'bundle exec rake assets:precompile RAILS_ENV=' + rails_env
       cwd release_path
       user node['errbit']['user']
+      rbenv_version node['errbit']['install_ruby']
     end
   end
 end

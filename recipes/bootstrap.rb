@@ -25,6 +25,7 @@ rbenv_script 'rake db:seed' do
   code 'bundle exec rake db:seed RAILS_ENV=' + node['errbit']['config']['rails_env']
   cwd current_dir
   user node['errbit']['user']
+  rbenv_version node['errbit']['install_ruby']
 
   not_if "#{home_dir}/.rbenv/bin/rbenv exec bundle exec rails runner 'exit User.where(:admin => true).exists?'", {
     :cwd => current_dir,

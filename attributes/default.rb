@@ -26,7 +26,6 @@ default['errbit']['revision']     = "master"
 
 # Local ruby to install via rbenv
 default['errbit']['install_ruby'] = '2.2.4'
-default['rbenv']['user_installs'] = [{ 'user' => node['errbit']['user'] }]
 
 # dotenv file variables
 #
