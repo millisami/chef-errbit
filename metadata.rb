@@ -9,7 +9,7 @@ version          "0.4.0"
 depends          "git"
 depends          "ruby_rbenv", ">=2"
 depends          "apt"
-depends          "nginx", '~> 2.7'
+depends          "chef_nginx"
 depends          "build-essential"
 depends          "selinux_policy"
 

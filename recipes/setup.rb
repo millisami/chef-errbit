@@ -20,7 +20,7 @@
 
 include_recipe "build-essential"
 include_recipe "git"
-include_recipe "nginx"
+include_recipe "chef_nginx"
 
 extend SELinuxPolicy::Helpers
 include_recipe 'selinux_policy::install' if use_selinux

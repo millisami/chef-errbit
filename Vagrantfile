@@ -46,7 +46,7 @@ Vagrant.configure("2") do |config|
     }
 
     chef.run_list = [
-      'recipe[nginx]',
+      'recipe[chef_nginx]',
       'recipe[errbit::default]',
       'recipe[errbit::bootstrap]'
     ]
