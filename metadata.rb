@@ -7,7 +7,7 @@ long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 version          "0.4.0"
 
 depends          "git"
-depends          "ruby_rbenv", ">=2"
+depends          "ruby_rbenv", ">= 2.0"
 depends          "apt"
 depends          "chef_nginx"
 depends          "build-essential"
