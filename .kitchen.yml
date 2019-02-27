@@ -1,0 +1,22 @@
+---
+driver:
+  name: vagrant
+  customize:
+    memory: 768
+  network:
+    - ['forwarded_port', {guest: 80,  host: 8080, auto_correct: true}]
+
+provisioner:
+  name: chef_zero
+
+platforms:
+  - name: centos-7.3
+  - name: ubuntu-12.04
+
+suites:
+  - name: default
+    run_list:
+      - recipe[mongodb]
+      - recipe[chef_nginx]
+      - recipe[errbit::default]
+      - recipe[errbit::bootstrap]

@@ -18,64 +18,61 @@
 # limitations under the License.
 #
 
-include_recipe "mongodb::10gen_repo"
-
-node.set['build_essential']['compiletime'] = true
 include_recipe "build-essential"
-
 include_recipe "git"
-gem_package "bundler"
+include_recipe "chef_nginx"
+
+extend SELinuxPolicy::Helpers
+include_recipe 'selinux_policy::install' if use_selinux
+
+home_dir = "/home/#{node['errbit']['user']}"
+rails_env = node['errbit']['config']['rails_env']
 
 group node['errbit']['group']
+
 user node['errbit']['user'] do
   action :create
-  comment "Deployer user"
+  comment "Errbit user"
   gid node['errbit']['group']
   shell "/bin/bash"
-  home "/home/#{node['errbit']['user']}"
-  password node['errbit']['password']
+  home home_dir
   supports :manage_home => true
-  system true
+  system false
 end
 
-# Exporting the SECRET_TOKEN env var
-secret_token = rand(8**256).to_s(36).ljust(8,'a')[0..150]
-# execute "set SECRET_TOKEN var" do
-#   command "echo 'export SECRET_TOKEN=#{secret_token}' >> ~/.bash_profile"
-#   not_if "grep SECRET_TOKEN ~/.bash_profile"
-# end
-file "/etc/profile.d/errbit_env.sh" do
-  mode "0644"
-  action :create_if_missing
-  content "export SECRET_TOKEN=#{secret_token}\nexport RAILS_ENV=production\nexport RACK_ENV=production\n"
+# Ensure nginx can read within this directory
+directory home_dir do
+  mode 0701
 end
 
-# execute "set RAILS_ENV var" do
-#   command "echo 'export RAILS_ENV=production' >> ~/.bash_profile"
-#   not_if "grep RAILS_ENV ~/.bash_profile"
-# end
+rbenv_user_install node['errbit']['user']
 
-# execute "set RACK_ENV var" do
-#   command "echo 'export RACK_ENV=production' >> ~/.bash_profile"
-#   not_if "grep RACK_ENV ~/.bash_profile"
-# end
+rbenv_plugin 'ruby-build' do
+  git_url 'https://github.com/rbenv/ruby-build.git'
+  user node['errbit']['user']
+end
 
-execute "update sources list" do
-  command "apt-get update"
-  action :nothing
-end.run_action(:run)
+# Install appropriate Ruby with rbenv
+rbenv_ruby node['errbit']['install_ruby'] do
+  action :install
+  user node['errbit']['user']
+end
 
-%w(libxml2-dev libxslt1-dev libcurl4-gnutls-dev).each do |pkg|
-  r = package pkg do
-    action :nothing
-  end
-  r.run_action(:install)
+# Set as the rbenv default ruby
+rbenv_global node['errbit']['install_ruby'] do
+  user node['errbit']['user']
+end
+
+# Install required Ruby Gems(via rbenv)
+rbenv_gem "bundler" do
+  action :install
+  user node['errbit']['user']
+  rbenv_version node['errbit']['install_ruby']
 end
 
 directory node['errbit']['deploy_to'] do
   owner node['errbit']['user']
   group node['errbit']['group']
-  mode 00755
   action :create
   recursive true
 end
@@ -86,7 +83,7 @@ directory "#{node['errbit']['deploy_to']}/shared" do
   mode 00755
 end
 
-%w{ log pids system tmp vendor_bundle scripts config sockets }.each do |dir|
+%w( config log pids sockets ).each do |dir|
   directory "#{node['errbit']['deploy_to']}/shared/#{dir}" do
     owner node['errbit']['user']
     group node['errbit']['group']
@@ -95,85 +92,96 @@ end
   end
 end
 
-# errbit config.yml
-template "#{node['errbit']['deploy_to']}/shared/config/config.yml" do
-  source "config.yml.erb"
-  owner node['errbit']['user']
-  group node['errbit']['group']
-  mode 00644
-  variables(params: {
-    host: node['errbit']['config']['host'],
-    enforce_ssl: node['errbit']['config']['enforce_ssl'],
-    email_from: node['errbit']['config']['email_from'],
-    per_app_email_at_notices: node['errbit']['config']['per_app_email_at_notices'],
-    email_at_notices: node['errbit']['config']['email_at_notices'],
-    confirm_resolve_err: node['errbit']['config']['confirm_resolve_err'],
-    user_has_username: node['errbit']['config']['user_has_username'],
-    allow_comments_with_issue_tracker: node['errbit']['config']['allow_comments_with_issue_tracker'],
-    use_gravatar: node['errbit']['config']['use_gravatar'],
-    gravatar_default: node['errbit']['config']['gravatar_default'],
-    github_authentication: node['errbit']['config']['github_authentication'],
-    github_client_id: node['errbit']['config']['github_client_id'],
-    github_secret: node['errbit']['config']['github_secret'],
-    github_access_scope: node['errbit']['config']['github_access_scope']
-  })
-end
+require 'securerandom'
+node.normal_unless['errbit']['config']['secret_key_base'] = SecureRandom.urlsafe_base64(96)
 
-template "#{node['errbit']['deploy_to']}/shared/config/mongoid.yml" do
-  source "mongoid.yml.erb"
+file "#{node['errbit']['deploy_to']}/shared/config/env" do
+  content node['errbit']['config'].map { |key, value|
+    case value
+    when nil
+    when Array
+      "export #{key.upcase}=\"[#{value.join ','}]\""
+    else
+      "export #{key.upcase}=#{value.inspect}"
+    end
+  }.compact.join("\n") + "\n"
+
   owner node['errbit']['user']
   group node['errbit']['group']
-  mode 00644
-  variables( params: {
-    environment: node['errbit']['environment'],
-    host: node['errbit']['db']['host'],
-    port: node['errbit']['db']['port'],
-    database: node['errbit']['db']['database']
-    # username: node['errbit']['db']['username'],
-    # password: node['errbit']['db']['password']
-  })
+  mode 0644
 end
 
 deploy_revision node['errbit']['deploy_to'] do
   repo node['errbit']['repo_url']
   revision node['errbit']['revision']
+  shallow_clone true
+
   user node['errbit']['user']
   group node['errbit']['group']
-  enable_submodules false
-  migrate false
-  before_migrate do
-    link "#{release_path}/vendor/bundle" do
-      to "#{node['errbit']['deploy_to']}/shared/vendor_bundle"
-    end
-    common_groups = %w{development test cucumber staging production}
-    execute "bundle install --deployment --without #{(common_groups - ([node['errbit']['environment']])).join(' ')}" do
-      ignore_failure true
-      cwd release_path
-    end
-  end
 
-  symlink_before_migrate nil
-  symlinks(
-    "config/config.yml" => "config/config.yml",
-    "config/mongoid.yml" => "config/mongoid.yml"
+  environment(
+    'HOME' => home_dir,
+    'RAILS_ENV' => rails_env
   )
-  environment 'RAILS_ENV' => node['errbit']['environment'], 'SECRET_TOKEN' => node['errbit']['secret_token']
-  shallow_clone true
-  action :deploy #:deploy or :rollback or :force_deploy
 
-  before_restart do
+  migration_command "#{home_dir}/.rbenv/bin/rbenv exec bundle exec rake db:migrate"
+  migrate true
 
-    Chef::Log.info "*" * 20 + "COMPILING ASSETS" + "*" * 20
-    execute "asset_precompile" do
+  symlink_before_migrate('config/env' => '.env')
+  symlinks('log' => 'log', 'pids' => 'tmp/pids', 'sockets' => 'tmp/sockets')
+
+  before_migrate do
+    template "#{release_path}/UserGemfile" do
+      source "UserGemfile.erb"
+      owner node['errbit']['user']
+      group node['errbit']['group']
+      mode 0644
+    end
+
+    common_groups = %w{development test production heroku} - [rails_env]
+
+    rbenv_script 'bundle install' do
+      code "bundle install --system --without '#{common_groups.join ' '}'"
       cwd release_path
       user node['errbit']['user']
-      group node['errbit']['group']
-      command "bundle exec rake assets:precompile --trace"
-      environment ({'RAILS_ENV' => node['errbit']['environment']})
+      rbenv_version node['errbit']['install_ruby']
+    end
+
+    selinux_policy_fcontext "#{release_path}/(app/assets|public)(/.*)?" do
+      secontext 'httpd_sys_content_t'
+    end
+
+    Chef::Log.info "*" * 20 + "COMPILING ASSETS" + "*" * 20
+
+    rbenv_script 'rake assets:precompile' do
+      code 'bundle exec rake assets:precompile RAILS_ENV=' + rails_env
+      cwd release_path
+      user node['errbit']['user']
+      rbenv_version node['errbit']['install_ruby']
     end
   end
-  # git_ssh_wrapper "wrap-ssh4git.sh"
-  scm_provider Chef::Provider::Git
+end
+
+selinux_policy_fcontext "#{node['errbit']['deploy_to']}/current" do
+  secontext 'httpd_sys_content_t'
+end
+
+selinux_policy_fcontext "#{node['errbit']['deploy_to']}/shared/sockets/[^/]*\.sock" do
+  secontext 'httpd_var_run_t'
+end
+
+selinux_policy_module 'nginx-errbit-socket' do
+  content <<-EOF
+    module nginx-errbit-socket 0.1;
+
+    require {
+      type httpd_t;
+      type init_t;
+      class unix_stream_socket connectto;
+    }
+
+    allow httpd_t init_t:unix_stream_socket connectto;
+  EOF
 end
 
 template "#{node['nginx']['dir']}/sites-available/#{node['errbit']['name']}" do
@@ -187,4 +195,3 @@ end
 nginx_site node['errbit']['name'] do
   enable true
 end
-

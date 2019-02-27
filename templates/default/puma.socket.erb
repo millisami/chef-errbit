@@ -1,0 +1,12 @@
+[Unit]
+Description=<%= node['errbit']['name'] %> Puma socket
+
+[Socket]
+SocketUser=<%= node['errbit']['user'] %>
+SocketGroup=<%= node['nginx']['group'] %>
+SocketMode=0660
+Backlog=<%= node['errbit']['server']['backlog'] %>
+ListenStream=<%= node['errbit']['deploy_to'] %>/shared/sockets/puma.sock
+
+[Install]
+WantedBy=sockets.target

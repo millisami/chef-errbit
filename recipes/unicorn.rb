@@ -18,46 +18,35 @@
 # limitations under the License.
 #
 
-include_recipe 'unicorn'
-
-node.default[:unicorn][:worker_timeout]   = 60
-node.default[:unicorn][:worker_processes] = 2 #[node[:cpu][:total].to_i * 4, 8].min
-node.default[:unicorn][:preload_app]      = false
-node.default[:unicorn][:tcp_nodelay]      = true
-node.default[:unicorn][:backlog]          = 100
-node.default[:unicorn][:tcp_nopush]       = true
-node.default[:unicorn][:tries]            = 3
-# node.default[:unicorn][:delay]            = 100
-
 Chef::Log.info "-" * 70
 Chef::Log.info "Unicorn Config"
 
-template "#{node['errbit']['deploy_to']}/shared/config/unicorn.conf" do
-  source "unicorn.conf.erb"
+template "#{node['errbit']['deploy_to']}/shared/config/unicorn.rb" do
+  source "unicorn.rb.erb"
   owner node['errbit']['user']
   group node['errbit']['group']
   mode 00644
 end
 
 template "/etc/init.d/unicorn_#{node['errbit']['name']}" do
-  source "unicorn.service.erb"
+  source "unicorn.init.erb"
   owner "root"
   group "root"
   mode 00755
+  variables(
+    :user => node['errbit']['user'],
+    :deploy_to => node['errbit']['deploy_to'],
+    :env => node['errbit']['config']['rails_env']
+  )
 end
 
 service "unicorn_#{node['errbit']['name']}" do
   provider Chef::Provider::Service::Init::Debian
-  start_command   "/etc/init.d/unicorn_#{node['errbit']['name']} start"
-  stop_command    "/etc/init.d/unicorn_#{node['errbit']['name']} stop"
-  restart_command "/etc/init.d/unicorn_#{node['errbit']['name']} restart"
-  status_command  "/etc/init.d/unicorn_#{node['errbit']['name']} status"
-  supports :start => true, :stop => true, :restart => true, :status => true
-  action :nothing
-end
+  supports [:restart, :status]
+  action :enable
 
-
-# Restarting the unicorn
-service "unicorn_#{node['errbit']['name']}" do
-  action :restart
+  subscribes :restart, "template[/etc/init.d/unicorn_#{node['errbit']['name']}]"
+  subscribes :restart, "template[#{node['errbit']['deploy_to']}/shared/config/env]"
+  subscribes :restart, "template[#{node['errbit']['deploy_to']}/shared/config/unicorn.rb]"
+  subscribes :restart, "deploy_revision[#{node['errbit']['deploy_to']}]"
 end
